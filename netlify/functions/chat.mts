@@ -1,8 +1,8 @@
-import { stream } from "@netlify/functions";
+import type { Context } from "@netlify/functions";
 
-export const handler = stream(async (event) => {
+export default async (req: Request, context: Context) => {
   try {
-    if (event.httpMethod !== "POST") {
+    if (req.method !== "POST") {
       return new Response(
         JSON.stringify({ error: "Method not allowed" }),
         {
@@ -24,7 +24,7 @@ export const handler = stream(async (event) => {
       );
     }
 
-    const body = JSON.parse(event.body || "{}");
+    const body = await req.json();
 
     const upstream = await fetch("https://api.siliconflow.cn/v1/chat/completions", {
       method: "POST",
@@ -35,29 +35,22 @@ export const handler = stream(async (event) => {
       body: JSON.stringify(body)
     });
 
-    if (!upstream.body) {
-      const text = await upstream.text();
-      return new Response(text, {
-        status: upstream.status,
-        headers: {
-          "Content-Type": upstream.headers.get("content-type") || "application/json"
-        }
-      });
-    }
+    const contentType =
+      upstream.headers.get("content-type") ||
+      (body.stream ? "text/event-stream" : "application/json");
 
     return new Response(upstream.body, {
       status: upstream.status,
       headers: {
-        "Content-Type": upstream.headers.get("content-type") || "text/event-stream",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive"
+        "Content-Type": contentType,
+        "Cache-Control": "no-cache"
       }
     });
   } catch (err) {
     return new Response(
       JSON.stringify({
         error: "Function error",
-        message: err.message
+        message: err instanceof Error ? err.message : String(err)
       }),
       {
         status: 500,
@@ -65,4 +58,4 @@ export const handler = stream(async (event) => {
       }
     );
   }
-});
+};

@@ -1,5 +1,5 @@
 {
-  "name": "zhengyuan-app",
+  "name": "zhengyuan-static-site",
   "private": true,
   "type": "module",
   "dependencies": {
