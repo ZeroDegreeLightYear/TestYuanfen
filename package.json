@@ -1,0 +1,8 @@
+{
+  "name": "zhengyuan-app",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@netlify/functions": "^3.0.0"
+  }
+}
