@@ -1,15 +1,15 @@
 import type { Context } from "@netlify/functions";
 
 export default async (req: Request, context: Context) => {
-  // 配置跨域响应头（解决前端跨域问题）
+  // 跨域头配置（解决浏览器 CORS 报错）
   const corsHeaders = {
-    "Access-Control-Allow-Origin": "*", // 生产环境建议指定具体域名
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type",
   };
 
   try {
-    // 处理 OPTIONS 预检请求（跨域必备）
+    // 处理 OPTIONS 预检请求
     if (req.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -40,13 +40,13 @@ export default async (req: Request, context: Context) => {
       );
     }
 
-    // 解析请求体（增加错误处理）
+    // 解析请求体（增加错误捕获）
     let body;
     try {
       body = await req.json();
-    } catch (err) {
+    } catch (e) {
       return new Response(
-        JSON.stringify({ error: "Invalid JSON body", message: err instanceof Error ? err.message : String(err) }),
+        JSON.stringify({ error: "Invalid JSON in request body" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -54,7 +54,7 @@ export default async (req: Request, context: Context) => {
       );
     }
 
-    // 转发请求到 SiliconFlow
+    // 转发到 SiliconFlow API
     const upstream = await fetch("https://api.siliconflow.cn/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -64,9 +64,10 @@ export default async (req: Request, context: Context) => {
       body: JSON.stringify(body),
     });
 
-    // 处理响应（兼容流式和非流式响应）
-    const contentType = upstream.headers.get("content-type") || (body.stream ? "text/event-stream" : "application/json");
-    
+    // 透传响应类型
+    const contentType = upstream.headers.get("content-type") ||
+      (body.stream ? "text/event-stream" : "application/json");
+
     return new Response(upstream.body, {
       status: upstream.status,
       headers: {
@@ -77,7 +78,6 @@ export default async (req: Request, context: Context) => {
     });
 
   } catch (err) {
-    // 全局异常处理
     return new Response(
       JSON.stringify({
         error: "Function error",
