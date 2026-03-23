@@ -1296,28 +1296,28 @@ function getZodiac(iso) {
 }
 
 function getTarot(score) {
-  // 1. 保留你原有的遍历匹配逻辑
   for (const cardGroup of tarotCards) {
     if (score >= cardGroup.scoreMin) {
-      // 2. 新增：从当前分数段的牌列表中随机选一张
-      const randomIndex = Math.floor(Math.random() * cardGroup.cards.length);
-      const randomCard = cardGroup.cards[randomIndex];
-      // 3. 返回和你原始结构一致的结果（scoreMin + name + desc）
+
+      // ✅ 正确：调用 getCard()
+      const card = cardGroup.getCard();
+
       return {
         scoreMin: cardGroup.scoreMin,
-        name: randomCard.name,
-        desc: randomCard.desc
+        name: card.name,
+        desc: card.desc
       };
     }
   }
-  // 4. 兜底逻辑：取最后一个分数段的随机牌
+
+  // 兜底
   const lastGroup = tarotCards[tarotCards.length - 1];
-  const randomIndex = Math.floor(Math.random() * lastGroup.cards.length);
-  const randomCard = lastGroup.cards[randomIndex];
+  const card = lastGroup.getCard();
+
   return {
     scoreMin: lastGroup.scoreMin,
-    name: randomCard.name,
-    desc: randomCard.desc
+    name: card.name,
+    desc: card.desc
   };
 }
 
