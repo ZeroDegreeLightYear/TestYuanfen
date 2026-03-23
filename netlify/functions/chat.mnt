@@ -1,101 +1,91 @@
-// 纯JS导入，去掉type类型注解，适配Netlify函数打包
-import { Context } from "@netlify/functions";
+import type { Context } from "@netlify/functions";
 
-// chat.mnt 跨域配置，解决前端请求拦截，保证页面正常调用
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Access-Control-Max-Age": "86400"
-};
+export default async (req: Request, context: Context) => {
+  // 配置跨域响应头（解决前端跨域问题）
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*", // 生产环境建议指定具体域名
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
 
-// chat.mnt 核心对话函数，纯JS写法，无TS语法，Netlify可正常打包
-export default async (req, context) => {
   try {
-    // 处理浏览器预检OPTIONS请求，必须保留，否则前端POST被拦截
+    // 处理 OPTIONS 预检请求（跨域必备）
     if (req.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
-        headers: CORS_HEADERS
+        headers: corsHeaders,
       });
     }
 
-    // 仅允许POST请求，chat.mnt对话接口仅支持POST
+    // 仅允许 POST 方法
     if (req.method !== "POST") {
       return new Response(
-        JSON.stringify({ error: "Method not allowed，chat.mnt仅支持POST请求" }),
+        JSON.stringify({ error: "Method not allowed" }),
         {
           status: 405,
-          headers: { ...CORS_HEADERS, "Content-Type": "application/json" }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
-    // 读取硅基流动API密钥，从Netlify环境变量获取
+    // 校验 API Key
     const apiKey = process.env.SILICONFLOW_API_KEY;
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: "chat.mnt服务异常：未配置API密钥" }),
+        JSON.stringify({ error: "Missing SILICONFLOW_API_KEY" }),
         {
           status: 500,
-          headers: { ...CORS_HEADERS, "Content-Type": "application/json" }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
-    // 解析前端传递的请求体
-    const body = await req.json();
+    // 解析请求体（增加错误处理）
+    let body;
+    try {
+      body = await req.json();
+    } catch (err) {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body", message: err instanceof Error ? err.message : String(err) }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
-    // 转发请求至硅基流动官方API
+    // 转发请求到 SiliconFlow
     const upstream = await fetch("https://api.siliconflow.cn/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
+        "Authorization": `Bearer ${apiKey}`,
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
 
-    // 适配流式对话和普通响应，自动判断返回格式
+    // 处理响应（兼容流式和非流式响应）
     const contentType = upstream.headers.get("content-type") || (body.stream ? "text/event-stream" : "application/json");
-
-    // 拼接响应头，合并跨域和缓存配置
-    const responseHeaders = {
-      ...CORS_HEADERS,
-      "Content-Type": contentType,
-      "Cache-Control": "no-cache"
-    };
-
-    // 流式响应额外配置，保证AI对话流正常传输
-    if (contentType.includes("event-stream")) {
-      responseHeaders.Connection = "keep-alive";
-    }
-
-    // 兜底处理：上游接口无响应体时，返回文本内容
-    if (!upstream.body) {
-      const text = await upstream.text();
-      return new Response(text, {
-        status: upstream.status,
-        headers: responseHeaders
-      });
-    }
-
-    // 正常返回响应，支持chat.mnt完整对话功能
+    
     return new Response(upstream.body, {
       status: upstream.status,
-      headers: responseHeaders
+      headers: {
+        ...corsHeaders,
+        "Content-Type": contentType,
+        "Cache-Control": "no-cache",
+      },
     });
 
   } catch (err) {
-    // 全局错误捕获，返回友好提示，方便排查问题
+    // 全局异常处理
     return new Response(
       JSON.stringify({
-        error: "chat.mnt函数运行错误",
-        message: err instanceof Error ? err.message : String(err)
+        error: "Function error",
+        message: err instanceof Error ? err.message : String(err),
       }),
       {
         status: 500,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }
