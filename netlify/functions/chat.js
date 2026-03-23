@@ -1,7 +1,6 @@
-import type { Context } from "@netlify/functions";
-
-export default async (req: Request, context: Context) => {
-  // 跨域头配置（解决浏览器 CORS 报错）
+// netlify/functions/chat.js
+export default async (req, context) => {
+  // 跨域头配置
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -40,7 +39,7 @@ export default async (req: Request, context: Context) => {
       );
     }
 
-    // 解析请求体（增加错误捕获）
+    // 解析请求体
     let body;
     try {
       body = await req.json();
