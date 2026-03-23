@@ -67,19 +67,6 @@
       line-height: 1.7;
     }
 
-    .top-note {
-      margin-top: 12px;
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      background: #fff7ed;
-      color: #9a3412;
-      border: 1px solid #fed7aa;
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 13px;
-    }
-
     .input-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -507,10 +494,6 @@
       line-height: 1.8;
     }
 
-    .muted {
-      color: var(--muted);
-    }
-
     .loading {
       color: #64748b;
       font-style: italic;
@@ -849,7 +832,7 @@
             <div class="tag-list" id="summaryTags"></div>
           </div>
 
-          <div class="summary-grid" id="summaryGrid">
+          <div class="summary-grid">
             <div class="summary-card">
               <div class="summary-label">正缘指数</div>
               <div class="summary-value" id="sumScore">--</div>
@@ -876,9 +859,9 @@
               <div class="summary-sub">最加分的信号</div>
             </div>
             <div class="summary-card">
-              <div class="summary-label">最大风险</div>
+              <div class="summary-label">最大关注点</div>
               <div class="summary-value" id="sumRisk">--</div>
-              <div class="summary-sub">最需要注意的点</div>
+              <div class="summary-sub">最值得提前沟通</div>
             </div>
           </div>
         </div>
@@ -910,6 +893,14 @@
               <div class="mini-card-title">🧿 八字信号摘要</div>
               <div class="mini-line" id="baziSignalPanel"></div>
             </div>
+            <div class="mini-card">
+              <div class="mini-card-title">👤 你的人格画像</div>
+              <div class="mini-line" id="p1Panel"></div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-card-title">💑 TA 的人格画像</div>
+              <div class="mini-line" id="p2Panel"></div>
+            </div>
           </div>
 
           <div class="box-green" id="positiveSignalsBox"></div>
@@ -925,9 +916,9 @@
         </div>
 
         <div class="section-card">
-          <h4>娱乐版八字合婚报告</h4>
+          <h4>八字合婚报告</h4>
           <div class="report-box" id="baziReport">
-            <div class="loading">填写信息并点击“开始测算”后，这里会生成非模板化八字分析。</div>
+            <div class="loading">填写信息并点击“开始测算”后，这里会生成八字合婚报告。</div>
           </div>
         </div>
 
@@ -935,6 +926,13 @@
           <h4>综合正缘报告</h4>
           <div class="report-box" id="finalReport">
             <div class="loading">这里会生成基于结构化信号的大模型综合分析。</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h4>恋爱洞察报告</h4>
+          <div class="report-box" id="insightReport">
+            <div class="loading">这里会生成更深入的关系问题与解决方案分析。</div>
           </div>
         </div>
       </div>
@@ -945,7 +943,7 @@
           <div class="chat-box" id="chatBox"></div>
           <div class="typing" id="typingIndicator">AI 正在思考中...</div>
           <div class="chat-input-row">
-            <input type="text" id="userQuestion" placeholder="例如：谁更适合主动？这段关系适合结婚吗？">
+            <input type="text" id="userQuestion" placeholder="例如：谁更适合主动？我们最大的磨合点是什么？">
             <button id="sendBtn">发送</button>
           </div>
           <div class="footer">
@@ -959,26 +957,21 @@
 
 <script>
 /* =========================
-   0. API KEY
-========================= */
-
-
-/* =========================
    1. 基础数据
 ========================= */
 const signs = [
-  { name:'白羊座', start:'03-21', end:'04-19', trait:'热情直接', description:'充满活力，喜欢冒险，行动力强，但有时冲动' },
-  { name:'金牛座', start:'04-20', end:'05-20', trait:'稳重踏实', description:'注重实际，有耐心，追求稳定，但有时固执' },
-  { name:'双子座', start:'05-21', end:'06-21', trait:'灵活健谈', description:'聪明好奇，善于交流，适应性强，但有时善变' },
-  { name:'巨蟹座', start:'06-22', end:'07-22', trait:'温柔体贴', description:'情感丰富，重视家庭，富有同情心，但有时敏感' },
-  { name:'狮子座', start:'07-23', end:'08-22', trait:'自信大方', description:'领导能力强，慷慨热情，喜欢被关注，但有时霸道' },
-  { name:'处女座', start:'08-23', end:'09-22', trait:'细心认真', description:'追求完美，有条理，负责任，但有时挑剔' },
-  { name:'天秤座', start:'09-23', end:'10-23', trait:'优雅温和', description:'追求和谐，审美能力强，善于交际，但有时犹豫' },
-  { name:'天蝎座', start:'10-24', end:'11-22', trait:'深情专一', description:'洞察力强，意志坚定，神秘深邃，但有时多疑' },
-  { name:'射手座', start:'11-23', end:'12-21', trait:'自由乐观', description:'热爱自由，乐观开朗，喜欢探索，但有时不负责任' },
-  { name:'摩羯座', start:'12-22', end:'01-19', trait:'沉稳负责', description:'目标明确，勤奋努力，有责任感，但有时严肃' },
-  { name:'水瓶座', start:'01-20', end:'02-18', trait:'独立特别', description:'思想前卫，独立自主，富有创意，但有时冷漠' },
-  { name:'双鱼座', start:'02-19', end:'03-20', trait:'浪漫感性', description:'富有想象力，善解人意，艺术气质，但有时逃避现实' }
+  { name:'白羊座', start:'03-21', end:'04-19', trait:'热情直接', description:'充满活力，喜欢冒险，行动力强，但有时冲动', element:'火' },
+  { name:'金牛座', start:'04-20', end:'05-20', trait:'稳重踏实', description:'注重实际，有耐心，追求稳定，但有时固执', element:'土' },
+  { name:'双子座', start:'05-21', end:'06-21', trait:'灵活健谈', description:'聪明好奇，善于交流，适应性强，但有时善变', element:'风' },
+  { name:'巨蟹座', start:'06-22', end:'07-22', trait:'温柔体贴', description:'情感丰富，重视家庭，富有同情心，但有时敏感', element:'水' },
+  { name:'狮子座', start:'07-23', end:'08-22', trait:'自信大方', description:'领导能力强，慷慨热情，喜欢被关注，但有时霸道', element:'火' },
+  { name:'处女座', start:'08-23', end:'09-22', trait:'细心认真', description:'追求完美，有条理，负责任，但有时挑剔', element:'土' },
+  { name:'天秤座', start:'09-23', end:'10-23', trait:'优雅温和', description:'追求和谐，审美能力强，善于交际，但有时犹豫', element:'风' },
+  { name:'天蝎座', start:'10-24', end:'11-22', trait:'深情专一', description:'洞察力强，意志坚定，神秘深邃，但有时多疑', element:'水' },
+  { name:'射手座', start:'11-23', end:'12-21', trait:'自由乐观', description:'热爱自由，乐观开朗，喜欢探索，但有时不负责任', element:'火' },
+  { name:'摩羯座', start:'12-22', end:'01-19', trait:'沉稳负责', description:'目标明确，勤奋努力，有责任感，但有时严肃', element:'土' },
+  { name:'水瓶座', start:'01-20', end:'02-18', trait:'独立特别', description:'思想前卫，独立自主，富有创意，但有时冷漠', element:'风' },
+  { name:'双鱼座', start:'02-19', end:'03-20', trait:'浪漫感性', description:'富有想象力，善解人意，艺术气质，但有时逃避现实', element:'水' }
 ];
 
 const matchMap = {
@@ -997,11 +990,10 @@ const matchMap = {
 };
 
 const tarotCards = [
-  { scoreMin:90, name:'恋人牌', desc:'灵魂契合，双向奔赴，是天赐正缘' },
-  { scoreMin:75, name:'星币二', desc:'感情稳定，互相包容，越走越甜' },
-  { scoreMin:60, name:'圣杯六', desc:'温暖治愈，彼此是对的人' },
-  { scoreMin:45, name:'权杖八', desc:'需要主动，缘分正在靠近' },
-  { scoreMin:0, name:'隐士牌', desc:'先了解自己，再靠近对方' }
+  { scoreMin:93, name:'恋人牌', desc:'灵魂契合，双向奔赴，是天赐正缘' },
+  { scoreMin:89, name:'太阳牌', desc:'关系积极明亮，彼此带来成长和能量' },
+  { scoreMin:85, name:'星币二', desc:'感情稳定，互相包容，越走越甜' },
+  { scoreMin:0, name:'圣杯六', desc:'温暖治愈，彼此是值得认真靠近的人' }
 ];
 
 const fiveElements = ['金','木','水','火','土'];
@@ -1031,50 +1023,50 @@ const zodiacMatch = {
 };
 
 const mbtiTypes = {
-  'INTJ': { name: '建筑师', trait: '战略思维，独立冷静' },
-  'INTP': { name: '逻辑学家', trait: '理性分析，创新思维' },
-  'ENTJ': { name: '指挥官', trait: '领导才能，目标导向' },
-  'ENTP': { name: '辩论家', trait: '机智灵活，创意无限' },
-  'INFJ': { name: '提倡者', trait: '同理心强，理想主义' },
-  'INFP': { name: '调停者', trait: '理想主义，内心丰富' },
-  'ENFJ': { name: '主人公', trait: '社交达人，关怀他人' },
-  'ENFP': { name: '竞选者', trait: '热情洋溢，充满创意' },
-  'ISTJ': { name: '物流师', trait: '务实可靠，有条不紊' },
-  'ISFJ': { name: '守护者', trait: '温暖体贴，尽职尽责' },
-  'ESTJ': { name: '总经理', trait: '组织管理，务实高效' },
-  'ESFJ': { name: '执政官', trait: '社交协调，关爱他人' },
-  'ISTP': { name: '鉴赏家', trait: '灵活实用，冷静观察' },
-  'ISFP': { name: '探索者', trait: '温柔随和，艺术气质' },
-  'ESTP': { name: '企业家', trait: '行动派，享受当下' },
-  'ESFP': { name: '表演者', trait: '热情友善，享受生活' }
+  'INTJ': { name: '建筑师', trait: '战略思维，独立冷静', style:'偏理性规划型', emotion:'不太会第一时间表露情绪，但内心很重视稳定与尊重' },
+  'INTP': { name: '逻辑学家', trait: '理性分析，创新思维', style:'偏思考观察型', emotion:'更习惯先想清楚，再表达感受' },
+  'ENTJ': { name: '指挥官', trait: '领导才能，目标导向', style:'偏推动执行型', emotion:'容易把解决问题放在表达情绪前面' },
+  'ENTP': { name: '辩论家', trait: '机智灵活，创意无限', style:'偏主动探索型', emotion:'需要新鲜感，也需要被理解自己的脑回路' },
+  'INFJ': { name: '提倡者', trait: '同理心强，理想主义', style:'偏深度投入型', emotion:'很重视精神连接，容易在关系里默默付出' },
+  'INFP': { name: '调停者', trait: '理想主义，内心丰富', style:'偏感受价值型', emotion:'非常在意被理解和被珍惜' },
+  'ENFJ': { name: '主人公', trait: '社交达人，关怀他人', style:'偏关系经营型', emotion:'容易主动照顾别人，也希望被正面回应' },
+  'ENFP': { name: '竞选者', trait: '热情洋溢，充满创意', style:'偏浪漫热情型', emotion:'需要热度、互动和精神上的有趣感' },
+  'ISTJ': { name: '物流师', trait: '务实可靠，有条不紊', style:'偏稳定负责型', emotion:'爱体现在行动，不一定体现在嘴上' },
+  'ISFJ': { name: '守护者', trait: '温暖体贴，尽职尽责', style:'偏照顾陪伴型', emotion:'容易默默关心，需要安全感和确定感' },
+  'ESTJ': { name: '总经理', trait: '组织管理，务实高效', style:'偏秩序执行型', emotion:'希望关系清晰，不喜欢反复拉扯' },
+  'ESFJ': { name: '执政官', trait: '社交协调，关爱他人', style:'偏温暖互动型', emotion:'很在意关系氛围，也很在意被在乎' },
+  'ISTP': { name: '鉴赏家', trait: '灵活实用，冷静观察', style:'偏行动解决型', emotion:'需要空间，但不代表不重视关系' },
+  'ISFP': { name: '探索者', trait: '温柔随和，艺术气质', style:'偏柔和感受型', emotion:'更需要被尊重节奏和情绪边界' },
+  'ESTP': { name: '企业家', trait: '行动派，享受当下', style:'偏现实推动型', emotion:'喜欢直接和有回应的关系' },
+  'ESFP': { name: '表演者', trait: '热情友善，享受生活', style:'偏活力陪伴型', emotion:'很需要互动感和被重视的感觉' }
 };
 
 const eduCompatibility = {
-  '本科-本科': 10,
-  '硕士-硕士': 15,
-  '博士-博士': 20,
-  '本科-硕士': 8,
-  '硕士-本科': 8,
-  '大专-大专': 5,
-  '本科-大专': 6,
-  '大专-本科': 6,
-  '高中-高中': 3,
-  '高中-本科': 2,
-  '本科-高中': 2,
-  '其他': 0
+  '本科-本科': 12,
+  '硕士-硕士': 14,
+  '博士-博士': 15,
+  '本科-硕士': 10,
+  '硕士-本科': 10,
+  '大专-大专': 9,
+  '本科-大专': 9,
+  '大专-本科': 9,
+  '高中-高中': 8,
+  '高中-本科': 8,
+  '本科-高中': 8,
+  '其他': 8
 };
 
 const familyCompatibilityMap = {
-  '普通工薪': 6,
-  '县城稳定': 8,
-  '城市工薪': 8,
-  '小康改善': 10,
-  '双职工中产': 12,
-  '经商家庭': 11,
+  '普通工薪': 9,
+  '县城稳定': 10,
+  '城市工薪': 10,
+  '小康改善': 12,
+  '双职工中产': 13,
+  '经商家庭': 12,
   '企业主家庭': 14,
-  '书香知识型': 12,
-  '资源型家庭': 13,
-  '重组特殊': 5
+  '书香知识型': 13,
+  '资源型家庭': 14,
+  '重组特殊': 9
 };
 
 const heavenlyStems = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
@@ -1127,16 +1119,16 @@ function getTarot(score) {
 }
 
 function getFamilyCompatibility(f1, f2) {
-  if (!f1 || !f2) return 0;
-  const score1 = familyCompatibilityMap[f1] || 6;
-  const score2 = familyCompatibilityMap[f2] || 6;
+  if (!f1 || !f2) return 9;
+  const score1 = familyCompatibilityMap[f1] || 10;
+  const score2 = familyCompatibilityMap[f2] || 10;
   const diff = Math.abs(score1 - score2);
 
   if (f1 === f2) return 15;
-  if (diff <= 1) return 12;
-  if (diff <= 2) return 9;
-  if (diff <= 4) return 6;
-  return 3;
+  if (diff <= 1) return 13;
+  if (diff <= 2) return 11;
+  if (diff <= 4) return 10;
+  return 9;
 }
 
 function getAgeFromBirth(birth) {
@@ -1149,19 +1141,37 @@ function getAgeFromBirth(birth) {
   return age;
 }
 
+function normalizeJob(job = '') {
+  const text = job.trim();
+  if (!text) return { category:'未填写', style:'职业信息未填写，但不影响整体关系判断' };
+
+  const map = [
+    { keys:['教师','老师','教育'], category:'教育型职业', style:'沟通表达和责任感通常较强' },
+    { keys:['程序','工程师','开发','算法','产品','设计'], category:'专业技术型职业', style:'思考逻辑较强，做事更看效率和方案' },
+    { keys:['医生','护士','医'], category:'医疗照顾型职业', style:'责任心强，也更容易把照顾别人放前面' },
+    { keys:['销售','市场','运营','商务'], category:'外向推动型职业', style:'互动感和推进感较强，表达通常更直接' },
+    { keys:['公务员','事业编','国企','体制'], category:'稳定秩序型职业', style:'更看重确定感、规划性和现实落地' },
+    { keys:['老板','创业','个体'], category:'主动掌控型职业', style:'节奏较快，主见通常更强' }
+  ];
+
+  for (const item of map) {
+    if (item.keys.some(k => text.includes(k))) return item;
+  }
+
+  return { category:'现实务实型职业', style:'职业节奏带来现实考量，做决定时会参考长期稳定' };
+}
+
 function getLevelText(score) {
-  if (score >= 90) return `🎉 正缘指数 ${score}%：天作之合，天生一对`;
-  if (score >= 75) return `💖 正缘指数 ${score}%：良缘相配，属于明显加分的一组`;
-  if (score >= 60) return `😊 正缘指数 ${score}%：缘分不错，认真经营就很稳`;
-  if (score >= 45) return `🤍 正缘指数 ${score}%：有吸引，也需要磨合`;
-  return `💡 正缘指数 ${score}%：更偏向后天经营型关系`;
+  if (score >= 93) return `🎉 正缘指数 ${score}%：强烈正缘感，属于很有结果的一组`;
+  if (score >= 89) return `💖 正缘指数 ${score}%：高匹配关系，越相处越稳`;
+  return `😊 正缘指数 ${score}%：整体很适合长期发展`;
 }
 
 /* =========================
    3. MBTI 匹配
 ========================= */
 function mbtiCompatibility(type1, type2) {
-  if (type1 === type2) return 12;
+  if (type1 === type2) return 14;
 
   const adjacentTypes = {
     'INTJ': ['INTP', 'ENTJ'],
@@ -1182,7 +1192,7 @@ function mbtiCompatibility(type1, type2) {
     'ESFP': ['ISFP', 'ENFP', 'ESFJ']
   };
 
-  if (adjacentTypes[type1]?.includes(type2)) return 8;
+  if (adjacentTypes[type1]?.includes(type2)) return 12;
 
   const complementaryTypes = [
     ['INTJ', 'ENFP'], ['INTP', 'ENFJ'], ['ENTJ', 'INFP'], ['ENTP', 'INFJ'],
@@ -1192,9 +1202,9 @@ function mbtiCompatibility(type1, type2) {
   if (complementaryTypes.some(pair =>
     (pair[0] === type1 && pair[1] === type2) ||
     (pair[1] === type1 && pair[0] === type2)
-  )) return 10;
+  )) return 13;
 
-  return 5;
+  return 10;
 }
 
 /* =========================
@@ -1300,41 +1310,87 @@ function buildBazi(dateStr, hourStr) {
 }
 
 /* =========================
-   5. 规则层：拆模块分析
+   5. 规则层
 ========================= */
+function buildPersonalityProfile(p) {
+  const sign = getSign(p.birth);
+  const mbtiInfo = p.mbti ? mbtiTypes[p.mbti] : null;
+  const jobInfo = normalizeJob(p.job);
+
+  const lines = [];
+  lines.push(`${sign.name}气质偏${sign.trait}，在关系里通常会呈现较明显的个人风格`);
+  if (mbtiInfo) {
+    lines.push(`${p.mbti}更接近${mbtiInfo.style}，${mbtiInfo.emotion}`);
+  } else {
+    lines.push(`MBTI未填写，整体按大众型人格理解，更看重现实体验与被尊重感`);
+  }
+
+  if (p.family.includes('中产') || p.family.includes('企业') || p.family.includes('资源')) {
+    lines.push(`成长环境偏稳定或资源型，对未来节奏、生活品质和规划感会更在意`);
+  } else if (p.family.includes('书香')) {
+    lines.push(`成长环境偏知识型，更重视观念交流、表达方式和精神匹配`);
+  } else if (p.family.includes('重组')) {
+    lines.push(`成长经历可能让其更在意安全感、边界感和被认真对待`);
+  } else {
+    lines.push(`成长环境偏务实型，更关注长期稳定、现实可靠和日常相处质量`);
+  }
+
+  lines.push(`${jobInfo.category}，${jobInfo.style}`);
+
+  if (p.edu === '硕士' || p.edu === '博士') {
+    lines.push(`教育背景较高，通常更重视思维匹配和沟通质量`);
+  } else if (p.edu === '本科') {
+    lines.push(`教育背景相对均衡，既看感觉也看现实`);
+  } else {
+    lines.push(`更容易从相处体验和现实感受判断关系值不值得继续`);
+  }
+
+  return lines;
+}
+
 function calcBaseScore(p1, p2) {
   const t1 = new Date(p1.birth).getTime();
   const t2 = new Date(p2.birth).getTime();
   const dayDiff = Math.abs(t1 - t2) / 86400000;
-  const dateScore = 100 - Math.min(100, dayDiff / 3);
+  const dateScore = 100 - Math.min(100, dayDiff / 4);
 
   const hd = Math.abs(p1.h - p2.h);
-  const hScore = 100 - Math.min(100, hd / 2);
+  const hScore = 100 - Math.min(100, hd / 2.5);
 
   const wd = Math.abs(p1.w - p2.w);
-  const wScore = 100 - Math.min(100, wd);
+  const wScore = 100 - Math.min(100, wd / 1.2);
 
-  const sameCity = p1.home.slice(0,2) === p2.home.slice(0,2) ? 10 : 0;
+  const sameCity = p1.home.slice(0,2) === p2.home.slice(0,2) ? 12 : 7;
 
   const s1 = getSign(p1.birth).name;
   const s2 = getSign(p2.birth).name;
-  const starBonus = matchMap[s1].includes(s2) ? 15 : 5;
+  const sign1 = getSign(p1.birth);
+  const sign2 = getSign(p2.birth);
+  const sameElement = sign1.element === sign2.element;
+  const starBonus = matchMap[s1].includes(s2) ? 16 : sameElement ? 13 : 10;
 
   const mbtiComp = p1.mbti && p2.mbti
-    ? (p1.mbti === p2.mbti ? 10 : mbtiCompatibility(p1.mbti, p2.mbti))
-    : 0;
+    ? (p1.mbti === p2.mbti ? 14 : mbtiCompatibility(p1.mbti, p2.mbti))
+    : 10;
 
   const eduComp = eduCompatibility[`${p1.edu}-${p2.edu}`] || eduCompatibility['其他'];
   const familyComp = getFamilyCompatibility(p1.family, p2.family);
   const zodiacComp = p1.zodiac && p2.zodiac
-    ? (zodiacMatch[p1.zodiac].match.includes(p2.zodiac) ? 10 :
-      zodiacMatch[p1.zodiac].clash.includes(p2.zodiac) ? -5 : 3)
-    : 0;
+    ? (zodiacMatch[p1.zodiac].match.includes(p2.zodiac) ? 13 :
+      zodiacMatch[p1.zodiac].clash.includes(p2.zodiac) ? 9 : 11)
+    : 10;
 
-  const genderComp = ((p1.gender === '男' && p2.gender === '女') || (p1.gender === '女' && p2.gender === '男')) ? 5 : 0;
+  const genderComp = ((p1.gender === '男' && p2.gender === '女') || (p1.gender === '女' && p2.gender === '男')) ? 8 : 8;
 
-  let total = (dateScore * 0.25) + (hScore * 0.1) + (wScore * 0.05) + sameCity + starBonus + mbtiComp + eduComp + familyComp + zodiacComp + genderComp;
-  total = Math.max(0, Math.min(100, Math.round(total)));
+  const age1 = getAgeFromBirth(p1.birth);
+  const age2 = getAgeFromBirth(p2.birth);
+  const ageDiff = Math.abs(age1 - age2);
+  const ageComp = ageDiff <= 2 ? 12 : ageDiff <= 5 ? 10 : 9;
+
+  let total = (dateScore * 0.22) + (hScore * 0.08) + (wScore * 0.05) + sameCity + starBonus + mbtiComp + eduComp + familyComp + zodiacComp + genderComp + ageComp;
+
+  total = Math.round(total);
+  total = Math.max(85, Math.min(96, total));
 
   return {
     total,
@@ -1347,7 +1403,8 @@ function calcBaseScore(p1, p2) {
     eduComp,
     familyComp,
     zodiacComp,
-    genderComp
+    genderComp,
+    ageComp
   };
 }
 
@@ -1355,6 +1412,19 @@ function analyzeStarSignals(p1, p2) {
   const sign1 = getSign(p1.birth);
   const sign2 = getSign(p2.birth);
   const high = matchMap[sign1.name].includes(sign2.name);
+  const sameElement = sign1.element === sign2.element;
+
+  const reasons = [];
+  if (high) {
+    reasons.push('属于常见高匹配星座组合，互动时更容易产生自然吸引');
+    reasons.push('在表达喜欢、靠近节奏、相处默契上通常更顺');
+  } else if (sameElement) {
+    reasons.push('虽然不是经典最佳配对，但同元素星座通常更容易互相懂情绪和节奏');
+    reasons.push('关系发展往往是越相处越顺，而不是一开始就特别炸裂');
+  } else {
+    reasons.push('星座层面更偏互补型，亮点在于能带给彼此不同视角');
+    reasons.push('只要愿意多理解对方的表达方式，后劲往往不差');
+  }
 
   return {
     sign1: sign1.name,
@@ -1363,10 +1433,8 @@ function analyzeStarSignals(p1, p2) {
     trait2: sign2.trait,
     description1: sign1.description,
     description2: sign2.description,
-    level: high ? 'high' : 'medium',
-    reasons: high
-      ? ['属于常见高匹配星座组合', '情感表达或生活节奏更容易形成默契']
-      : ['不是典型最佳配对', '更依赖后天沟通与理解来建立稳定']
+    level: high || sameElement ? 'high' : 'medium_high',
+    reasons
   };
 }
 
@@ -1374,20 +1442,20 @@ function analyzeZodiacSignals(p1, p2) {
   const z1 = p1.zodiac || getZodiac(p1.birth);
   const z2 = p2.zodiac || getZodiac(p2.birth);
 
-  let level = 'medium';
+  let level = 'medium_high';
   const reasons = [];
 
   if (zodiacMatch[z1].match.includes(z2)) {
     level = 'high';
     reasons.push('生肖组合偏加分，默契感更容易自然形成');
-    reasons.push('家庭观念和相处习惯更容易慢慢对齐');
+    reasons.push('在家庭观念、节奏感和生活习惯上更容易慢慢靠拢');
   } else if (zodiacMatch[z1].clash.includes(z2)) {
-    level = 'risk';
-    reasons.push('生肖组合带一点冲感，容易有吸引也容易起摩擦');
-    reasons.push('关系浓度不低，但更考验包容度和情绪管理');
+    level = 'medium';
+    reasons.push('生肖层面带一点“强吸引+强个性”的味道，甜的时候会很甜');
+    reasons.push('更适合提前建立沟通规则，让关系的热度变成稳定度');
   } else {
-    reasons.push('生肖层面属于中性组合');
-    reasons.push('真正决定关系深度的仍然是现实相处');
+    reasons.push('生肖层面属于中性偏顺的组合，不抢戏，但也不拖后腿');
+    reasons.push('真正拉高关系质量的，还是现实相处和彼此回应');
   }
 
   return { z1, z2, level, reasons };
@@ -1396,30 +1464,32 @@ function analyzeZodiacSignals(p1, p2) {
 function analyzeMbtiSignals(p1, p2) {
   if (!p1.mbti || !p2.mbti) {
     return {
-      level: 'unknown',
-      reasons: ['MBTI 未填写完整，这部分只保留中性判断']
+      level: 'medium_high',
+      reasons: [
+        'MBTI 未填写完整，这部分按大众人格关系来理解',
+        '实际相处里更看一个人是否愿意沟通、回应和承担'
+      ]
     };
   }
 
   const score = mbtiCompatibility(p1.mbti, p2.mbti);
-  let level = 'medium';
+  let level = 'medium_high';
   const reasons = [];
 
   if (p1.mbti === p2.mbti) {
     level = 'high';
     reasons.push('思维和表达方式相近，理解成本偏低');
-    reasons.push('容易出现“你应该懂我”的预期，反而要注意明确表达');
-  } else if (score >= 10) {
+    reasons.push('这类关系通常舒服度高，但也要注意别把“你应该懂我”当成默认前提');
+  } else if (score >= 13) {
     level = 'high';
-    reasons.push('属于互补性较强的一组');
-    reasons.push('一方更像推动者，一方更像感受者，容易互相吸引');
-  } else if (score >= 8) {
-    level = 'medium_high';
+    reasons.push('属于互补性很强的一组，一个推动关系，一个稳住情绪');
+    reasons.push('只要愿意站在对方角度翻译彼此语言，关系会很有层次');
+  } else if (score >= 11) {
     reasons.push('有相近的思考路径，也有差异带来的新鲜感');
-    reasons.push('适合在磨合中建立更深的理解');
+    reasons.push('这类组合的优点是越磨合越能发现对方对自己有帮助');
   } else {
-    reasons.push('沟通方式和情绪表达节奏可能不太一样');
-    reasons.push('需要刻意练习“说清楚”和“听明白”');
+    reasons.push('沟通节奏和情绪表达不完全一样，但并不构成硬伤');
+    reasons.push('只要多做“确认对方真实意思”这一步，误会会少很多');
   }
 
   return {
@@ -1434,26 +1504,26 @@ function analyzeFamilySignals(p1, p2) {
   const familyScore = getFamilyCompatibility(p1.family, p2.family);
   const eduScore = eduCompatibility[`${p1.edu}-${p2.edu}`] || eduCompatibility['其他'];
 
-  let level = 'medium';
+  let level = 'medium_high';
   const reasons = [];
 
-  if (familyScore >= 12) {
-    reasons.push('家庭条件层级比较接近，婚恋期待更容易对齐');
-  } else if (familyScore >= 8) {
-    reasons.push('家庭条件差异不算大，属于可协调范围');
+  if (familyScore >= 13) {
+    level = 'high';
+    reasons.push('家庭条件层级比较接近，婚恋期待、消费感受和生活方式更容易对齐');
+  } else if (familyScore >= 10) {
+    reasons.push('家庭条件有差异，但仍在容易协调的范围内');
+    reasons.push('只要早点聊清楚对未来生活的想法，差异反而能形成互补');
   } else {
-    reasons.push('家庭条件或成长环境存在明显差异，未来在消费观和婚礼标准上更要提前沟通');
-    level = 'risk';
+    reasons.push('家庭条件和成长环境存在明显差异，这会让双方对生活节奏、婚礼标准、消费习惯有不同想象');
+    reasons.push('这不是关系硬伤，但确实是更适合提前聊清楚的一块');
+    level = 'medium';
   }
 
-  if (eduScore >= 8) {
+  if (eduScore >= 10) {
     reasons.push('教育背景较接近，认知节奏和表达方式更容易同频');
   } else {
-    reasons.push('教育背景存在差异，容易带来不同的思维方式');
-    if (level !== 'risk') level = 'medium';
+    reasons.push('教育背景不完全一致，但并不妨碍建立稳定关系，更重要的是愿不愿意认真沟通');
   }
-
-  if (familyScore >= 12 && eduScore >= 8) level = 'high';
 
   return {
     family1: p1.family,
@@ -1472,23 +1542,23 @@ function analyzeElementSignals(p1, p2) {
   const z2 = p2.zodiac || getZodiac(p2.birth);
 
   const reasons = [];
-  let level = 'medium';
+  let level = 'medium_high';
 
   const goodElement = elementMatch[e1].match.includes(e2);
   const badElement = elementMatch[e1].clash.includes(e2);
   const goodZodiac = zodiacMatch[z1].match.includes(z2);
   const badZodiac = zodiacMatch[z1].clash.includes(z2);
 
-  if (goodElement) reasons.push('五行关系偏相生或同频，气场更顺');
-  if (badElement) reasons.push('五行关系存在一点相克感，容易在情绪或节奏上不对拍');
-  if (goodZodiac) reasons.push('生肖层面有传统加分');
-  if (badZodiac) reasons.push('生肖层面有冲感，甜和吵可能都会更明显');
+  if (goodElement) reasons.push('五行关系偏相生或同频，气场整体是顺的');
+  if (badElement) reasons.push('五行有一点克感，更适合在情绪上多给彼此台阶，而不是硬碰硬');
+  if (goodZodiac) reasons.push('生肖层面有传统加分，关系基础不差');
+  if (badZodiac) reasons.push('生肖层面自带一点张力，意味着彼此会很在意对方，也更容易被对方影响');
 
   if (goodElement && goodZodiac) level = 'high';
-  else if (badElement || badZodiac) level = 'risk';
+  else if (badElement || badZodiac) level = 'medium';
 
   if (reasons.length === 0) {
-    reasons.push('五行和生肖层面整体中性，更依赖现实相处');
+    reasons.push('五行和生肖层面整体中性偏顺，更依赖现实相处');
   }
 
   return { e1, e2, z1, z2, level, reasons };
@@ -1524,24 +1594,25 @@ function analyzeBaziSignals(b1, b2, p1, p2, score) {
     positiveSignals.push('年柱有同根或同频感，底层价值观更容易靠近');
     highlights.push('年柱同频');
   } else {
-    riskSignals.push('年柱不同，成长背景和处事逻辑可能不完全一样');
+    positiveSignals.push('年柱不同但不构成坏事，更多代表彼此能从不同成长环境中带来新视角');
   }
 
   if (isHalfCombine) {
     positiveSignals.push('夫妻宫有相合信号，是正缘感的重要加分项');
     highlights.push('夫妻宫相合');
   } else if (isClash) {
-    riskSignals.push('夫妻宫带冲，吸引和摩擦往往同时存在');
-    highlights.push('夫妻宫有冲');
+    positiveSignals.push('夫妻宫带一点冲，说明吸引力和在意程度都不低，更适合把热烈感转成稳定感');
+    highlights.push('夫妻宫有张力');
   } else {
     positiveSignals.push('夫妻宫无明显硬冲，偏稳中求进');
+    highlights.push('夫妻宫偏稳');
   }
 
   if (sameDayMaster) {
     positiveSignals.push('双方日主同频，容易彼此理解核心需求');
     tags.push('同频感');
   } else {
-    positiveSignals.push('日主不同，容易形成互补');
+    positiveSignals.push('日主不同，容易形成互补，各自能带来不一样的支持方式');
     tags.push('互补感');
   }
 
@@ -1560,19 +1631,17 @@ function analyzeBaziSignals(b1, b2, p1, p2, score) {
     positiveSignals.push(...complementPoints);
     highlights.push('五行互补');
   } else {
-    riskSignals.push('五行互补感不算特别强，更需要靠现实磨合');
+    positiveSignals.push('五行没有明显硬冲，更像是可以靠相处慢慢磨合出舒服节奏的一组');
   }
 
-  if (score >= 75 || (sameYear && isHalfCombine)) {
-    tags.push('正缘感偏强', '中上等婚配');
-  } else if (score >= 60) {
-    tags.push('有长期潜力', '可经营');
+  if (score >= 89 || (sameYear && isHalfCombine)) {
+    tags.push('正缘感偏强', '高匹配婚配');
   } else {
-    tags.push('需要经营型关系');
+    tags.push('有长期潜力', '越相处越稳');
   }
 
-  riskSignals.push('如果双方都比较有主见，遇到现实问题时容易僵住');
-  riskSignals.push('切忌冷战，关系里最怕“我等你来懂我”');
+  riskSignals.push('如果双方都比较有主见，遇到现实问题时容易短暂僵住');
+  riskSignals.push('这类关系最怕的不是不合适，而是“都在等对方先懂自己”');
 
   return {
     sameYear,
@@ -1585,10 +1654,7 @@ function analyzeBaziSignals(b1, b2, p1, p2, score) {
     riskSignals,
     highlights,
     tags,
-    relationLevel:
-      score >= 75 || (sameYear && isHalfCombine) ? '中上等婚配' :
-      score >= 60 ? '有长期发展潜力' :
-      '需要经营型关系',
+    relationLevel: score >= 89 || (sameYear && isHalfCombine) ? '高匹配婚配' : '有长期发展潜力',
     person1: {
       gender: p1.gender,
       birth: p1.birth,
@@ -1624,34 +1690,27 @@ function analyzeMarriageSignals(p1, p2, score, baziSignals) {
 
   let years = '';
   let reasons = [];
-  let level = 'medium';
+  let level = 'high';
 
-  if (score >= 85) {
+  if (score >= 93) {
     years = `${currentYear} 下半年 - ${currentYear + 1}`;
-    reasons.push('关系成熟度较高，推进婚姻的动力更足');
-    reasons.push('只要现实条件不拖后腿，谈婚论嫁概率高');
-    level = 'high';
-  } else if (score >= 75) {
+    reasons.push('关系成熟度和确定感都比较高，适合推进承诺');
+    reasons.push('只要现实节奏跟得上，谈婚论嫁的概率很高');
+  } else if (score >= 89) {
     years = `${currentYear + 1} - ${currentYear + 2}`;
     reasons.push('感情基础较稳，适合边磨合边推进');
-    reasons.push('更适合先把工作、城市、家庭意见聊清楚');
-    level = 'high';
-  } else if (score >= 60) {
-    years = `${currentYear + 2} 左右`;
-    reasons.push('这段关系有潜力，但要先把相处模式磨顺');
-    reasons.push('先解决边界感和沟通问题，再谈婚姻会更稳');
+    reasons.push('更适合先把工作、城市、家庭意见聊清楚，再自然进入婚姻阶段');
   } else {
-    years = `建议先观察 1-2 年`;
-    reasons.push('当前更适合验证关系稳定性');
-    reasons.push('不建议为了“合适年龄”而草率推进婚姻');
-    level = 'risk';
+    years = `${currentYear + 1} - ${currentYear + 2}`;
+    reasons.push('这段关系的后劲不错，越认真经营，越容易走到稳定阶段');
+    reasons.push('先把相处模式磨顺，再谈婚姻会更舒服');
   }
 
   if (baziSignals.isHalfCombine) reasons.push('夫妻宫有合，对婚姻稳定性是加分项');
-  if (baziSignals.isClash) reasons.push('夫妻宫有冲，越是动心越要学会让步');
-  if (avgAge < 24) reasons.push('从年龄节奏看，更适合先稳定感情、积累现实基础');
+  if (baziSignals.isClash) reasons.push('夫妻宫有张力，意味着更需要“会沟通”，而不是“谁压过谁”');
+  if (avgAge < 24) reasons.push('从年龄节奏看，更适合先稳定关系、积累现实基础');
   if (avgAge >= 24 && avgAge <= 30) reasons.push('从年龄节奏看，属于适婚推进期');
-  if (avgAge > 30) reasons.push('从年龄节奏看，会更偏务实和责任导向');
+  if (avgAge > 30) reasons.push('从年龄节奏看，会更偏务实和责任导向，反而更适合谈长期');
 
   return { years, reasons, level };
 }
@@ -1669,39 +1728,44 @@ function buildRelationshipSignals(p1, p2) {
   const baziSignals = analyzeBaziSignals(bazi1, bazi2, p1, p2, baseScore.total);
   const marriageSignals = analyzeMarriageSignals(p1, p2, baseScore.total, baziSignals);
 
+  const p1Profile = buildPersonalityProfile(p1);
+  const p2Profile = buildPersonalityProfile(p2);
+
   const positiveSignals = [
-    ...starSignals.reasons.slice(0, 1),
-    ...zodiacSignals.level === 'high' ? zodiacSignals.reasons.slice(0,1) : [],
-    ...familySignals.level === 'high' ? familySignals.reasons.slice(0,1) : [],
+    ...starSignals.reasons.slice(0, 2),
+    ...zodiacSignals.reasons.slice(0, 1),
+    ...familySignals.reasons.slice(0, 1),
     ...baziSignals.positiveSignals.slice(0, 4)
   ];
 
   const riskSignals = [
-    ...(zodiacSignals.level === 'risk' ? zodiacSignals.reasons.slice(0,1) : []),
-    ...(familySignals.level === 'risk' ? familySignals.reasons.slice(0,1) : []),
-    ...(elementSignals.level === 'risk' ? elementSignals.reasons.slice(0,1) : []),
-    ...baziSignals.riskSignals.slice(0, 4)
-  ];
+    ...baziSignals.riskSignals.slice(0, 2),
+    familySignals.reasons.find(x => x.includes('差异')) || '现实问题更适合提前沟通，不要拖到情绪上来再聊',
+    mbtiSignals.reasons.find(x => x.includes('懂我') || x.includes('误会')) || '关系里最值得注意的是表达方式，而不是感情本身'
+  ].filter(Boolean);
 
-  const level =
-    baseScore.total >= 85 ? '上等婚配' :
-    baseScore.total >= 75 ? '中上等婚配' :
-    baseScore.total >= 60 ? '有长期潜力' :
-    baseScore.total >= 45 ? '需要磨合' :
-    '经营型关系';
-
-  const relationLabel =
-    baseScore.total >= 75 ? '正缘感偏强' :
-    baseScore.total >= 60 ? '有缘且可发展' :
-    baseScore.total >= 45 ? '有吸引但需要磨合' :
-    '缘分有，但不算轻松';
+  const level = baseScore.total >= 93 ? '强烈正缘' : baseScore.total >= 89 ? '高匹配婚配' : '长期发展型关系';
+  const relationLabel = baseScore.total >= 93 ? '正缘感很强' : baseScore.total >= 89 ? '越相处越稳' : '有结果潜力';
 
   const summaryTags = Array.from(new Set([
     ...baziSignals.tags,
     relationLabel,
-    marriageSignals.level === 'high' ? '婚姻推进窗口较好' : '婚姻宜稳不宜急',
-    mbtiSignals.level === 'high' ? '性格加分' : '沟通要用心'
+    '整体偏积极',
+    '适合长期发展',
+    '婚姻推进窗口较好',
+    mbtiSignals.level === 'high' ? '性格加分' : '沟通有成长空间'
   ])).slice(0, 6);
+
+  const biggestIssue = familySignals.reasons.find(x => x.includes('差异')) ||
+    riskSignals[0] ||
+    '双方都比较在意被理解，容易在表达方式上出现短暂错位';
+
+  const solutions = [
+    '把“我以为你懂”改成“我直接告诉你我需要什么”',
+    '现实问题早点聊，越早聊越不会变成情绪问题',
+    '争执时先处理情绪，再处理对错',
+    '多增加现实中的共同体验，让感觉落到生活细节上'
+  ];
 
   return {
     baseScore,
@@ -1714,6 +1778,14 @@ function buildRelationshipSignals(p1, p2) {
     elementSignals,
     baziSignals,
     marriageSignals,
+    personality: {
+      p1: p1Profile,
+      p2: p2Profile
+    },
+    insightSignals: {
+      biggestIssue,
+      solutions
+    },
     summary: {
       score: baseScore.total,
       level,
@@ -1722,7 +1794,7 @@ function buildRelationshipSignals(p1, p2) {
       positiveSignals,
       riskSignals,
       maxAdvantage: baziSignals.highlights[0] || positiveSignals[0] || '整体互补感不错',
-      maxRisk: riskSignals[0] || '更怕冷战和不表达',
+      maxRisk: biggestIssue,
       tarot: getTarot(baseScore.total)
     }
   };
@@ -1731,7 +1803,7 @@ function buildRelationshipSignals(p1, p2) {
 /* =========================
    6. 大模型文案层
 ========================= */
-async function callLLM(messages, temperature = 0.85, max_tokens = 1800) {
+async function callLLM(messages, temperature = 0.85, max_tokens = 1800, stream = false) {
   const response = await fetch('/.netlify/functions/chat', {
     method: 'POST',
     headers: {
@@ -1741,7 +1813,8 @@ async function callLLM(messages, temperature = 0.85, max_tokens = 1800) {
       model: 'Qwen/Qwen3-8B',
       messages,
       temperature,
-      max_tokens
+      max_tokens,
+      stream
     })
   });
 
@@ -1750,16 +1823,29 @@ async function callLLM(messages, temperature = 0.85, max_tokens = 1800) {
     throw new Error(`模型请求失败：${response.status} - ${errText}`);
   }
 
+  if (stream) return response;
+
   const data = await response.json();
   return data.choices?.[0]?.message?.content || '';
 }
 
+const WRITING_SYSTEM_PROMPT = `
+你不是在机械算命，你是在做“关系洞察”。
+要求：
+1. 文字要像真人写的，不要像客服
+2. 可以分析问题，但结论必须偏正向
+3. 不要把关系写得很差，整体要给人“这段关系值得经营、是能变好的”
+4. 不要频繁使用“说明、代表、意味着”这种程序味句式
+5. 多写现实场景：沟通、争执、家庭、未来规划、情绪回应
+6. 人格分析要偏大众人格，不要写得太极端
+7. 不要说双方不合适，要说“更适合提前沟通、提前磨合”
+`;
+
 function getBaziFallbackMarkdown(reportData) {
-  const s = reportData.summary;
   const b = reportData.baziSignals;
   return `
 ## 先给结论
-你们这组关系整体属于 **${b.relationLevel}**。不是没缘分，反而是有东西的，只是这段关系更怕冷战和硬碰硬。
+你们这组关系整体属于 **${b.relationLevel}**，正缘感是有的，而且越认真相处越容易走稳。
 
 ## 一、先看基础盘
 - 你：${b.person1.yearPillar}年 ${b.person1.monthPillar}月 ${b.person1.dayPillar}日 ${b.person1.hourPillar}时
@@ -1768,70 +1854,97 @@ function getBaziFallbackMarkdown(reportData) {
   日主：${b.person2.dayMaster}，${b.person2.summaryText}
 
 ## 二、合婚核心判断
-- 年柱：${b.sameYear ? '有同频感，底层价值观更容易靠近。' : '并非同根，后期更看现实磨合。'}
-- 夫妻宫：${b.isHalfCombine ? '有相合信号，是正缘的重要加分项。' : b.isClash ? '有冲，吸引与摩擦并存。' : '无明显大冲大合，偏稳。'}
+- 年柱：${b.sameYear ? '有同频感，底层价值观更容易靠近。' : '不完全同根，但差异反而能带来互补视角。'}
+- 夫妻宫：${b.isHalfCombine ? '有相合信号，是正缘的重要加分项。' : b.isClash ? '有张力感，说明彼此在意程度并不低。' : '无明显硬冲，偏稳。'}
 - 五行互补：${b.positiveSignals.slice(0,3).join('；')}
 
 ## 三、感情走向 / 婚姻稳定性
-这段关系感情浓度不低，但稳定性取决于你们怎么处理争执。处理得好，是越走越稳；处理不好，就容易因为小事卡住。
+这段关系的核心不是“有没有缘”，而是“能不能把喜欢变成稳定的相处方式”。好消息是，你们是有这个基础的。
 
 ## 四、建议
-- 少一点“等你来懂我”，多一点直接表达
-- 情绪上来时别冷战
-- 现实问题越早聊清楚，婚姻越稳
+- 少一点猜测，多一点直接表达
+- 情绪上来时先降温，再讨论问题
+- 未来规划越早聊，关系越稳
   `.trim();
 }
 
 function getFinalFallbackMarkdown(reportData) {
   const s = reportData.summary;
   return `
-## 综合结论
-你们现在这组关系，整体可以归到 **${s.level}**。从规则信号来看，有吸引，也有走长期的空间，但关键还是在现实相处质量。
+## 先给结论
+这段关系整体是偏正向的，属于**越相处越有结果**的一组。
 
-## 你们最加分的地方
+## 一、关系里的最大优势
 - ${s.positiveSignals.slice(0,3).join('\n- ')}
 
-## 最需要注意的地方
+## 二、最值得提前沟通的地方
 - ${s.riskSignals.slice(0,3).join('\n- ')}
 
-## 适合怎么推进
+## 三、适合怎么推进
 1. 先把沟通方式调顺，再谈更深一步承诺
 2. 少用猜的，多把需求讲明白
 3. 提前聊现实规划，感情会比想象中更稳
+
+## 四、结婚角度怎么看
+你们不是“只能谈感觉”的关系，反而是有机会把感觉慢慢落到现实里的类型。
+  `.trim();
+}
+
+function getInsightFallbackMarkdown(reportData) {
+  const i = reportData.insightSignals;
+  return `
+## 先给结论
+你们之间并不是没有问题，而是问题本身都属于**可以通过沟通和现实磨合解决的类型**，所以整体仍然偏积极。
+
+## 你们之间最大的问题是什么？
+你们之间最大的问题在于：**${i.biggestIssue}**
+
+## 关键问题点分析
+1. 关系里都很在意被理解，但表达方式不一定总能第一时间对上
+2. 一旦现实问题和情绪问题叠在一起，就容易把小分歧放大
+3. 其实感情本身不差，更需要的是“把关系经营好”的方法感
+
+## 可执行建议
+- 先建立现实中的默契，比如一起做计划、一起解决小事
+- 争执时先暂停，不要立刻分输赢
+- 每周安排一次“认真沟通”，把未来、情绪、需求说清楚
+- 多肯定对方已经做到的地方，关系会更有安全感
+
+## 最后一句
+你们不是不能走下去，反而是**很有机会越磨合越顺**。
   `.trim();
 }
 
 async function generateBaziNarrative(reportData) {
   const prompt = `
-你要根据一份“结构化的八字合婚信号”，写一份自然、有层次、不模板化的中文分析。
-注意：
-1. 你不是在重新计算命盘，你只能基于给定的结构化信号来表达。
-2. 风格像中文互联网里高质量的命理分析帖，不要像客服，不要像程序说明书。
-3. 允许使用“正缘、夫妻宫、同气相求、五行互补、婚配、磨合”等词，但不要过度神神叨叨。
-4. 开头先一句下结论。
-5. 用 Markdown 输出。
-6. 结构：
-   - 先给结论
-   - 一、先看基础盘
-   - 二、合婚核心判断
-   - 三、感情走向 / 婚姻稳定性
-   - 四、建议
-7. 不要机械重复“说明、代表、结论”这种句式。
-8. 不要无中生有。
+请根据这份“结构化八字合婚信号”，写一份自然、有层次、不模板化的中文分析。
 
-结构化数据如下：
+要求：
+1. 风格像中文互联网里高质量的命理分析帖，但不要太玄
+2. 结论偏正向
+3. 用 Markdown
+4. 结构：
+- 先给结论
+- 一、先看基础盘
+- 二、合婚核心判断
+- 三、感情走向 / 婚姻稳定性
+- 四、建议
+5. 可以分析问题，但不要把关系写崩
+
+数据如下：
 ${JSON.stringify({
   summary: reportData.summary,
   baziSignals: reportData.baziSignals,
-  marriageSignals: reportData.marriageSignals
+  marriageSignals: reportData.marriageSignals,
+  personality: reportData.personality
 }, null, 2)}
 `;
 
   try {
     const content = await callLLM([
-      { role: 'system', content: '你擅长把命理/合婚的结构化信号写成自然、有层次、有一点玄学感但不夸张的中文分析。' },
+      { role: 'system', content: WRITING_SYSTEM_PROMPT },
       { role: 'user', content: prompt }
-    ], 0.95, 1800);
+    ], 0.92, 1800);
 
     return content || getBaziFallbackMarkdown(reportData);
   } catch (e) {
@@ -1844,17 +1957,17 @@ async function generateFinalNarrative(reportData) {
 请根据下面这份“关系分析信号包”，写一份不模板化、自然、有人味的综合正缘报告。
 
 要求：
-1. 用 Markdown 输出。
-2. 不是机械总结，要像真人分析。
-3. 先给一句总判断。
-4. 分为：
-   - 先给结论
-   - 一、关系里的最大优势
-   - 二、最需要注意的磨合点
-   - 三、适合怎么推进
-   - 四、结婚角度怎么看
-5. 不要空话，不要每段都一个句式。
-6. 不要重新计算，只能基于结构化结果表达。
+1. 用 Markdown
+2. 先给一句总判断，整体偏正向
+3. 分为：
+- 先给结论
+- 一、关系里的最大优势
+- 二、最值得提前沟通的地方
+- 三、适合怎么推进
+- 四、结婚角度怎么看
+4. 多写现实相处，不要空话
+5. 人格分析偏大众人格，不要极端化
+6. 结论不能偏消极
 
 数据如下：
 ${JSON.stringify({
@@ -1864,13 +1977,14 @@ ${JSON.stringify({
   mbtiSignals: reportData.mbtiSignals,
   familySignals: reportData.familySignals,
   elementSignals: reportData.elementSignals,
-  marriageSignals: reportData.marriageSignals
+  marriageSignals: reportData.marriageSignals,
+  personality: reportData.personality
 }, null, 2)}
 `;
 
   try {
     const content = await callLLM([
-      { role: 'system', content: '你擅长把结构化关系信号写成自然、具体、有洞察的中文感情分析。' },
+      { role: 'system', content: WRITING_SYSTEM_PROMPT },
       { role: 'user', content: prompt }
     ], 0.9, 1800);
 
@@ -1880,31 +1994,67 @@ ${JSON.stringify({
   }
 }
 
+async function generateInsightNarrative(reportData) {
+  const prompt = `
+请根据这份关系分析数据，输出一份【恋爱洞察报告】。
+
+要求：
+1. 用 Markdown
+2. 风格真实、有洞察，不模板化
+3. 重点分析：双方之间最大的问题和解决方法
+4. 结构必须是：
+- 先给结论（偏积极）
+- 你们之间最大的问题是什么？
+- 关键问题点分析
+- 可执行建议
+- 最后一句偏正向总结
+5. 可以指出问题，但整体结论必须偏正向
+6. 不要把关系写差，要给人“能走下去”的感觉
+7. 人格分析偏向大众人格，尽量丰富
+
+数据如下：
+${JSON.stringify({
+  summary: reportData.summary,
+  mbti: reportData.mbtiSignals,
+  family: reportData.familySignals,
+  bazi: reportData.baziSignals,
+  element: reportData.elementSignals,
+  personality: reportData.personality,
+  insightSignals: reportData.insightSignals
+}, null, 2)}
+`;
+
+  try {
+    const content = await callLLM([
+      { role: 'system', content: WRITING_SYSTEM_PROMPT },
+      { role: 'user', content: prompt }
+    ], 0.95, 1800);
+
+    return content || getInsightFallbackMarkdown(reportData);
+  } catch (e) {
+    return getInsightFallbackMarkdown(reportData);
+  }
+}
+
 /* =========================
    7. 未来时间线
 ========================= */
 function getFutureTime(score) {
-  if (score >= 90) return "⏳ 推进窗口：你们现在就是很适合推进关系的阶段，彼此吸引感通常比较强。";
-  if (score >= 75) return "⏳ 推进窗口：下一次季节交替或节日前后，更容易把关系往前推一步。";
-  if (score >= 60) return "⏳ 推进窗口：更适合在一次重要谈心或一次认真见面之后推进。";
-  if (score >= 45) return "⏳ 推进窗口：需要先建立稳定沟通，再谈后面的承诺。";
-  return "⏳ 推进窗口：别急着赶进度，先把真实相处看明白更重要。";
+  if (score >= 93) return "⏳ 推进窗口：你们现在就是比较适合推进关系的阶段，彼此吸引感和确定感都不低。";
+  if (score >= 89) return "⏳ 推进窗口：下一次节日、生日或重要见面后，很容易自然往前走一步。";
+  return "⏳ 推进窗口：更适合在一次认真谈心或一次共同经历之后，把关系推进到更稳定的阶段。";
 }
 
 function getFutureProgress(score) {
-  if (score >= 90) return "🔮 关键进展：最近 1～3 个月内很容易出现明确突破，比如确定关系、公开心意或更主动靠近。";
-  if (score >= 75) return "🔮 关键进展：3～6 个月内关系有明显升温概率，适合从暧昧走向稳定。";
-  if (score >= 60) return "🔮 关键进展：半年左右可能出现一次关键节点，决定这段关系能不能更进一步。";
-  if (score >= 45) return "🔮 关键进展：会有转机，但前提是其中一方愿意主动和说清楚。";
-  return "🔮 关键进展：关系推进不会特别快，更需要时间和现实磨合。";
+  if (score >= 93) return "🔮 关键进展：最近 1～3 个月内很容易出现明确突破，比如关系确认、公开心意或更主动靠近。";
+  if (score >= 89) return "🔮 关键进展：3～6 个月内关系明显升温，适合从好感走向稳定。";
+  return "🔮 关键进展：半年左右会出现一个关键节点，让这段关系更清晰。";
 }
 
 function getFutureLove(score) {
-  if (score >= 90) return "❤️ 感情走向：彼此认定感很强，属于很有长期稳定潜力的组合。";
-  if (score >= 75) return "❤️ 感情走向：越相处越容易形成依赖和默契，是偏稳的关系。";
-  if (score >= 60) return "❤️ 感情走向：有发展空间，只要沟通不掉链子，后劲是有的。";
-  if (score >= 45) return "❤️ 感情走向：有吸引，但也有拉扯，磨合期过不过得去很关键。";
-  return "❤️ 感情走向：有缘，但更适合慢慢看，而不是太快下定论。";
+  if (score >= 93) return "❤️ 感情走向：彼此认定感很强，属于很有长期稳定潜力的组合。";
+  if (score >= 89) return "❤️ 感情走向：越相处越容易形成依赖和默契，是偏稳、偏甜的一组。";
+  return "❤️ 感情走向：有发展空间，只要沟通不掉链子，后劲是有的。";
 }
 
 /* =========================
@@ -1927,16 +2077,16 @@ function renderSummary(reportData) {
   document.getElementById('sumRisk').textContent = s.maxRisk;
 
   const tagHtml = s.summaryTags.map(tag => {
-    const type = /风险|冷战|冲|宜稳不宜急/.test(tag) ? 'warn'
-      : /正缘|婚配|加分|窗口较好/.test(tag) ? 'good'
-      : 'info';
+    const type = /沟通|空间|提前/.test(tag) ? 'info'
+      : /正缘|高匹配|长期|推进/.test(tag) ? 'good'
+      : 'warn';
     return addTag(tag, type);
   }).join('');
   document.getElementById('summaryTags').innerHTML = tagHtml;
 }
 
 function renderSignalPanels(reportData) {
-  const { starSignals, zodiacSignals, mbtiSignals, familySignals, elementSignals, baziSignals } = reportData;
+  const { starSignals, zodiacSignals, mbtiSignals, familySignals, elementSignals, baziSignals, personality } = reportData;
 
   document.getElementById('starPanel').innerHTML = `
     ${starSignals.sign1} × ${starSignals.sign2}<br/>
@@ -1967,23 +2117,22 @@ function renderSignalPanels(reportData) {
   `;
 
   document.getElementById('baziSignalPanel').innerHTML = `
-    年柱：${baziSignals.sameYear ? '偏同频' : '不同根'}<br/>
-    夫妻宫：${baziSignals.isHalfCombine ? '有相合' : baziSignals.isClash ? '有冲' : '偏稳'}<br/>
-    ${baziSignals.highlights.join('、') || '整体中性'}
+    年柱：${baziSignals.sameYear ? '偏同频' : '互补成长型'}<br/>
+    夫妻宫：${baziSignals.isHalfCombine ? '有相合' : baziSignals.isClash ? '有张力' : '偏稳'}<br/>
+    ${baziSignals.highlights.join('、') || '整体中性偏顺'}
   `;
+
+  document.getElementById('p1Panel').innerHTML = personality.p1.map(x => `- ${x}`).join('<br/>');
+  document.getElementById('p2Panel').innerHTML = personality.p2.map(x => `- ${x}`).join('<br/>');
 
   document.getElementById('positiveSignalsBox').innerHTML = `
     <strong>最主要的加分信号：</strong><br/>
-    ${reportData.summary.positiveSignals.length
-      ? `<ul class="clean-list">${reportData.summary.positiveSignals.map(x => `<li>${x}</li>`).join('')}</ul>`
-      : '当前没有明显的强加分信号'}
+    <ul class="clean-list">${reportData.summary.positiveSignals.map(x => `<li>${x}</li>`).join('')}</ul>
   `;
 
   document.getElementById('riskSignalsBox').innerHTML = `
-    <strong>最需要注意的风险点：</strong><br/>
-    ${reportData.summary.riskSignals.length
-      ? `<ul class="clean-list">${reportData.summary.riskSignals.map(x => `<li>${x}</li>`).join('')}</ul>`
-      : '整体没有明显硬伤'}
+    <strong>最值得提前沟通的地方：</strong><br/>
+    <ul class="clean-list">${reportData.summary.riskSignals.map(x => `<li>${x}</li>`).join('')}</ul>
   `;
 
   document.getElementById('marriageBox').innerHTML = `
@@ -1997,9 +2146,10 @@ function renderSignalPanels(reportData) {
   document.getElementById('futureLoveBox').textContent = getFutureLove(reportData.summary.score);
 }
 
-function renderReports(baziMarkdown, finalMarkdown) {
+function renderReports(baziMarkdown, finalMarkdown, insightMarkdown) {
   document.getElementById('baziReport').innerHTML = safeMarked(baziMarkdown);
   document.getElementById('finalReport').innerHTML = safeMarked(finalMarkdown);
+  document.getElementById('insightReport').innerHTML = safeMarked(insightMarkdown);
 }
 
 /* =========================
@@ -2024,20 +2174,15 @@ async function streamAIResponse(question) {
     return;
   }
 
-
   const typingIndicator = document.getElementById('typingIndicator');
   typingIndicator.style.display = 'block';
 
   try {
     const systemPrompt = `
-你是一位专业的中文恋爱顾问。
-你不会重新算命，你只会根据用户给定的结构化分析结果，给出自然、具体、实用的关系建议。
-
-要求：
-1. 回答用 Markdown。
-2. 少说空话，多给可执行建议。
-3. 可以提到八字、夫妻宫、五行、MBTI、家庭节奏，但核心仍然落到现实相处。
-4. 不要模板化，不要像客服。
+${WRITING_SYSTEM_PROMPT}
+你还是一位成熟的中文恋爱顾问。
+你不会重新算命，你只会根据结构化分析结果，给出自然、具体、实用的关系建议。
+回答要偏积极、偏建设性。
 `;
 
     const userPrompt = `
@@ -2059,36 +2204,26 @@ ${JSON.stringify({
     positiveSignals: currentResultData.baziSignals.positiveSignals,
     riskSignals: currentResultData.baziSignals.riskSignals
   },
-  marriageSignals: currentResultData.marriageSignals
+  marriageSignals: currentResultData.marriageSignals,
+  personality: currentResultData.personality,
+  insightSignals: currentResultData.insightSignals
 }, null, 2)}
 `;
 
-    const response = await fetch('/.netlify/functions/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'Qwen/Qwen3-8B',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.8,
-        max_tokens: 1800,
-        stream: true
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`API请求失败: ${response.status}`);
-    }
+    const response = await callLLM([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ], 0.85, 1800, true);
 
     const chatBox = document.getElementById('chatBox');
     const aiDiv = document.createElement('div');
     aiDiv.className = 'msg ai';
     aiDiv.innerHTML = '';
     chatBox.appendChild(aiDiv);
+
+    if (!response.body) {
+      throw new Error('响应体为空，流式返回失败');
+    }
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -2101,12 +2236,12 @@ ${JSON.stringify({
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
-      buffer = lines.pop();
+      buffer = lines.pop() || '';
 
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
-        const dataStr = line.slice(6);
-        if (dataStr === '[DONE]') continue;
+        const dataStr = line.slice(6).trim();
+        if (!dataStr || dataStr === '[DONE]') continue;
         try {
           const data = JSON.parse(dataStr);
           const delta = data.choices?.[0]?.delta;
@@ -2118,11 +2253,10 @@ ${JSON.stringify({
         } catch (e) {}
       }
     }
-
-    typingIndicator.style.display = 'none';
   } catch (error) {
-    typingIndicator.style.display = 'none';
     addChatMessage(`AI 咨询出错：${error.message}`, false);
+  } finally {
+    document.getElementById('typingIndicator').style.display = 'none';
   }
 }
 
@@ -2185,15 +2319,18 @@ async function runAnalysis() {
 
   document.getElementById('baziReport').innerHTML = `<div class="loading">正在生成八字合婚分析...</div>`;
   document.getElementById('finalReport').innerHTML = `<div class="loading">正在生成综合正缘报告...</div>`;
+  document.getElementById('insightReport').innerHTML = `<div class="loading">正在生成恋爱洞察报告...</div>`;
 
-  const [baziMarkdown, finalMarkdown] = await Promise.all([
+  const [baziMarkdown, finalMarkdown, insightMarkdown] = await Promise.all([
     generateBaziNarrative(reportData),
-    generateFinalNarrative(reportData)
+    generateFinalNarrative(reportData),
+    generateInsightNarrative(reportData)
   ]);
 
   currentResultData.baziMarkdown = baziMarkdown;
   currentResultData.finalMarkdown = finalMarkdown;
-  renderReports(baziMarkdown, finalMarkdown);
+  currentResultData.insightMarkdown = insightMarkdown;
+  renderReports(baziMarkdown, finalMarkdown, insightMarkdown);
 
   document.getElementById('chatBox').innerHTML = '';
   addChatMessage(`
@@ -2205,7 +2342,7 @@ async function runAnalysis() {
 
 ### 最值得看的两个点
 - **最大优势**：${reportData.summary.maxAdvantage}
-- **最大风险**：${reportData.summary.maxRisk}
+- **最值得提前沟通**：${reportData.summary.maxRisk}
 
 ### 你可以继续问我
 > 谁更适合主动？
