@@ -499,43 +499,380 @@
       font-style: italic;
     }
 
-    @media (max-width: 1200px) {
-      .summary-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
+    /* =========================
+       响应式增强：平板 + 手机双端优化
+    ========================= */
+
+    /* 通用增强 */
+    html {
+      -webkit-text-size-adjust: 100%;
     }
 
-    @media (max-width: 960px) {
-      .input-grid,
-      .app,
-      .analysis-grid {
-        grid-template-columns: 1fr;
+    body {
+      overflow-x: hidden;
+    }
+
+    .container,
+    .section-card,
+    .person-card,
+    .summary-card,
+    .mini-card,
+    .chat-panel,
+    .report-box,
+    .box-blue,
+    .box-pink,
+    .box-green,
+    .box-warn,
+    .msg {
+      min-width: 0;
+    }
+
+    .report-box,
+    .mini-line,
+    .score-text,
+    .page-subtitle,
+    .summary-sub,
+    .msg,
+    .msg.ai p,
+    .msg.ai li,
+    .msg.ai blockquote {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    select,
+    input,
+    textarea {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    /* 平板优化 */
+    @media (max-width: 1024px) {
+      body {
+        padding: 14px;
       }
 
-      .summary-grid {
-        grid-template-columns: repeat(2, 1fr);
+      .container {
+        padding: 18px;
+        border-radius: 20px;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+        gap: 16px;
       }
 
       .right-column {
         position: static;
+        order: 2;
+      }
+
+      .left-column {
+        order: 1;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .analysis-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chat-panel {
+        min-height: auto;
+      }
+
+      .chat-box {
+        min-height: 280px;
+        max-height: 48vh;
       }
     }
 
-    @media (max-width: 640px) {
+    /* 手机主优化 */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .container {
+        padding: 12px;
+        border-radius: 16px;
+      }
+
+      .page-header {
+        margin-bottom: 16px;
+      }
+
+      .page-title {
+        font-size: 24px;
+        line-height: 1.25;
+        margin-bottom: 8px;
+      }
+
+      .page-subtitle {
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .input-grid,
+      .app,
+      .analysis-grid,
       .row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+      }
+
+      .person-card,
+      .section-card,
+      .chat-panel {
+        padding: 14px;
+        border-radius: 14px;
+      }
+
+      .person-card h3,
+      .section-card h4,
+      .chat-title {
+        font-size: 16px;
+      }
+
+      .field {
+        margin-bottom: 12px;
+      }
+
+      .field label {
+        font-size: 13px;
+        margin-bottom: 5px;
+      }
+
+      input,
+      select,
+      textarea {
+        height: 44px;
+        padding: 10px 12px;
+        font-size: 16px; /* 防止 iPhone 自动放大 */
+        border-radius: 10px;
+      }
+
+      textarea {
+        min-height: 96px;
+        height: auto;
+      }
+
+      .primary-btn {
+        padding: 13px 16px;
+        font-size: 16px;
+        border-radius: 12px;
+      }
+
+      .score-bar-bg {
+        height: 22px;
+      }
+
+      .score-bar {
+        font-size: 12px;
+      }
+
+      .score-text {
+        font-size: 15px;
+        line-height: 1.6;
       }
 
       .summary-grid {
         grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .summary-card {
+        min-height: auto;
+        padding: 12px;
+        border-radius: 12px;
+      }
+
+      .summary-label {
+        font-size: 11px;
+      }
+
+      .summary-value {
+        font-size: 17px;
+      }
+
+      .summary-sub {
+        font-size: 12px;
+        margin-top: 4px;
+      }
+
+      .tag-list {
+        gap: 6px;
+      }
+
+      .tag {
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+
+      .mini-card {
+        padding: 12px;
+        border-radius: 12px;
+      }
+
+      .mini-card-title {
+        font-size: 14px;
+        margin-bottom: 6px;
+      }
+
+      .mini-line {
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .box-blue,
+      .box-pink,
+      .box-green,
+      .box-warn,
+      .report-box {
+        padding: 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .report-box h1 {
+        font-size: 20px;
+      }
+
+      .report-box h2 {
+        font-size: 18px;
+      }
+
+      .report-box h3,
+      .report-box h4 {
+        font-size: 16px;
+      }
+
+      .report-box ul,
+      .report-box ol {
+        padding-left: 18px;
+      }
+
+      .chat-panel {
+        padding: 12px;
+      }
+
+      .chat-box {
+        min-height: 220px;
+        max-height: 42vh;
+        padding: 10px;
+        border-radius: 12px;
+      }
+
+      .msg {
+        max-width: 94%;
+        padding: 9px 10px;
+        font-size: 13px;
+        line-height: 1.65;
+        border-radius: 12px;
+      }
+
+      .typing {
+        font-size: 12px;
+      }
+
+      .chat-input-row {
+        position: sticky;
+        bottom: 0;
+        background: var(--card);
+        padding-top: 8px;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .chat-input-row input {
+        min-width: 0;
+        height: 42px;
+        font-size: 16px;
+      }
+
+      .chat-input-row button {
+        flex-shrink: 0;
+        padding: 0 14px;
+        height: 42px;
+        border-radius: 10px;
+        font-size: 14px;
+      }
+
+      .footer {
+        font-size: 12px;
+        line-height: 1.6;
+        margin-top: 10px;
+      }
+    }
+
+    /* 超小屏手机 */
+    @media (max-width: 430px) {
+      body {
+        padding: 8px;
       }
 
       .container {
-        padding: 16px;
+        padding: 10px;
+        border-radius: 14px;
       }
 
       .page-title {
-        font-size: 26px;
+        font-size: 21px;
+      }
+
+      .page-subtitle {
+        font-size: 12px;
+      }
+
+      .person-card,
+      .section-card,
+      .chat-panel {
+        padding: 12px;
+      }
+
+      .summary-value {
+        font-size: 16px;
+      }
+
+      .score-text {
+        font-size: 14px;
+      }
+
+      .msg {
+        max-width: 96%;
+        font-size: 12.5px;
+      }
+
+      .chat-box {
+        max-height: 38vh;
+      }
+
+      .chat-input-row button {
+        padding: 0 12px;
+      }
+    }
+
+    .input-section-wrap {
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .input-section-wrap .person-card {
+        margin-bottom: 2px;
+      }
+
+      .input-section-wrap .primary-btn {
+        margin-top: 6px;
       }
     }
   </style>
@@ -550,7 +887,7 @@
       </div>
     </div>
 
-    <div id="inputSection">
+    <div id="inputSection" class="input-section-wrap">
       <div class="input-grid">
         <div class="person-card">
           <h3>👤 你的信息</h3>
